@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLoaderData, useNavigate, useParams } from "react-router-dom";
+
 import { toast } from "react-toastify";
 const JobPage = ({ deleteJob }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [job, setJob] = useState(true);
-  const [loading, setLoading] = useState(true);
 
-  // Delete Job
+  const job = useLoaderData();
 
   const onDeleteClick = (jobId) => {
     const confirmBox = confirm(
@@ -21,25 +18,6 @@ const JobPage = ({ deleteJob }) => {
       return navigate("/jobs");
     }
   };
-
-  // Fetch Single Job
-  useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const apiUrl = `/api/jobs/${id}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        setJob(data);
-      } catch (err) {
-        console.log("Error: unable to fetch data", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJob();
-  }, []);
 
   return (
     <>
@@ -109,7 +87,7 @@ const JobPage = ({ deleteJob }) => {
               <div className="bg-white p-6 rounded-lg shadow-md mt-6">
                 <h3 className="text-xl font-bold mb-6">Manage Job</h3>
                 <Link
-                  to="/add-job"
+                  to={`/edit-job/${job.id}`}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
                 >
                   Edit Job
@@ -129,4 +107,15 @@ const JobPage = ({ deleteJob }) => {
   );
 };
 
-export default JobPage;
+const jobLoader = async ({ params }) => {
+  try {
+    const res = await fetch(`/api/jobs/${params.id}`);
+    const data = await res.json();
+
+    return data;
+  } catch (err) {
+    toast.error("Unable to fetch data");
+  }
+};
+
+export { JobPage as default, jobLoader };
